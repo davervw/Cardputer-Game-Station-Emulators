@@ -4,13 +4,23 @@
 #include "Event.hxx"
 #include "a2600_display.h"
 #include "share/input.h"
+#include "../ble_input/ble_input.h"
+
+static BleInput* bleInput = (BleInput*)0;
 
 void a2600_input_init(void)
 {
+    bleInput = new BleInput();
+}
+
+bool isKeyPressed(char key)
+{
+    return M5Cardputer.Keyboard.isKeyPressed(key) || bleInput->isKeyPressed(key);
 }
 
 void a2600_input_update(Event& event)
 {
+    bleInput->handle();
     M5Cardputer.update();
     Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 
@@ -36,7 +46,7 @@ void a2600_input_update(Event& event)
 
     // ================== SCREEN MODE ==================
     if (M5Cardputer.Keyboard.isChange() &&
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
+        isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
         if (!a2600FullScreen) {
             a2600FullScreen = true;
             a2600ZoomPercent = 100;
@@ -50,44 +60,44 @@ void a2600_input_update(Event& event)
     }
 
     // ================== DIRECTIONS ==================
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_2)) {
+    if (isKeyPressed(CARDPUTER_LEFT_1) ||
+        isKeyPressed(CARDPUTER_LEFT_2)) {
         left = true;
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_2)) {
+    if (isKeyPressed(CARDPUTER_RIGHT_1) ||
+        isKeyPressed(CARDPUTER_RIGHT_2)) {
         right = true;
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_2)) {
+    if (isKeyPressed(CARDPUTER_UP_1) ||
+        isKeyPressed(CARDPUTER_UP_2)) {
         up = true;
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_3)) {
+    if (isKeyPressed(CARDPUTER_DOWN_1) ||
+        isKeyPressed(CARDPUTER_DOWN_2) ||
+        isKeyPressed(CARDPUTER_DOWN_3)) {
         down = true;
     }
 
     // ================== BOUTONS ATARI ==================
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B)) {
+    if (isKeyPressed(CARDPUTER_BTN_A_1) ||
+        isKeyPressed(CARDPUTER_BTN_A_2) ||
+        isKeyPressed(CARDPUTER_BTN_B)) {
         fire = true;
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_SELECT)) {
+    if (isKeyPressed(CARDPUTER_BTN_SELECT)) {
         select = true;
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START)) {
+    if (isKeyPressed(CARDPUTER_BTN_START)) {
         reset = true;
     }
 
     // ================== ZOOM ==================
-    if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
+    if (ks.fn && isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
         if (!a2600FullScreen) {
             a2600FullScreen = true;
         }
@@ -96,7 +106,7 @@ void a2600_input_update(Event& event)
         }
     }
 
-    if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
+    if (ks.fn && isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
         if (!a2600FullScreen) {
             a2600FullScreen = true;
         }

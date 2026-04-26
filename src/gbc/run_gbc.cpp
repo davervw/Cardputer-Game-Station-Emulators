@@ -74,6 +74,8 @@ void run_gbc(const uint8_t* romData, size_t romLen, const char* romPathOrName) {
     gbc_sound_init(gbc_sampleRate);
     gbc_allocate_buffers();
     
+    gbc_input_init();
+
     // init core GNUBOY
     int ret = gnuboy_init(
         gbc_sampleRate,

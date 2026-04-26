@@ -2,6 +2,7 @@
 #include <M5Cardputer.h>
 #include <Arduino.h>
 #include "share/input.h"
+#include "../ble_input/ble_input.h"
 
 extern "C" {
   #include "gnuboy/gnuboy.h"
@@ -12,10 +13,23 @@ extern bool gbcFullScreen;
 extern int  gbcZoomPercent;
 extern int  gbPalette;
 
+static BleInput* bleInput = (BleInput*)0;
+
+extern "C" void gbc_input_init(void)
+{
+    bleInput = new BleInput();
+}
+
+static inline bool isKeyPressed(char key)
+{
+    return M5Cardputer.Keyboard.isKeyPressed(key) || bleInput->isKeyPressed(key);
+}
+
 extern "C" int gbc_input_poll(void)
 {   
     const int dummy_ret = -1; 
 
+    bleInput->handle();
     M5Cardputer.update();
     Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 
@@ -37,7 +51,7 @@ extern "C" int gbc_input_poll(void)
 
     // Screen mode
     if (M5Cardputer.Keyboard.isChange() &&
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
+        isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
         
         // -1 is gameboy color mode
         if (gbPalette == -1) {
@@ -72,59 +86,59 @@ extern "C" int gbc_input_poll(void)
 
     // ================== DIRECTIONS ==================
     // Left : 'a' or ','
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_2)) {
+    if (isKeyPressed(CARDPUTER_LEFT_1) ||
+        isKeyPressed(CARDPUTER_LEFT_2)) {
         pad |=  GB_PAD_LEFT;
     }
 
     // Right : 'd' or '/'
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_2)) {
+    if (isKeyPressed(CARDPUTER_RIGHT_1) ||
+        isKeyPressed(CARDPUTER_RIGHT_2)) {
         pad |=  GB_PAD_RIGHT;
     }
 
     // Up : 'e' or ';'
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_2)) {
+    if (isKeyPressed(CARDPUTER_UP_1) ||
+        isKeyPressed(CARDPUTER_UP_2)) {
         pad |=  GB_PAD_UP;
     }
 
     // Down : 's', '.' or 'z'
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_3)) {
+    if (isKeyPressed(CARDPUTER_DOWN_1) ||
+        isKeyPressed(CARDPUTER_DOWN_2) ||
+        isKeyPressed(CARDPUTER_DOWN_3)) {
         pad |=  GB_PAD_DOWN;
     }
 
     // ================== BOUTONS GBC ==================
     // A
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2)) {
+    if (isKeyPressed(CARDPUTER_BTN_A_1) ||
+        isKeyPressed(CARDPUTER_BTN_A_2)) {
         pad |=  GB_PAD_A;
     }
 
     // B
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B)) {
+    if (isKeyPressed(CARDPUTER_BTN_B)) {
         pad |=  GB_PAD_B;
     }
 
     // START
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START)) {
+    if (isKeyPressed(CARDPUTER_BTN_START)) {
         pad |=  GB_PAD_START;
     }
 
     // SELECT
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_SELECT)) {
+    if (isKeyPressed(CARDPUTER_BTN_SELECT)) {
         pad |=  GB_PAD_SELECT;
     }
 
     // ================== ZOOM  ==================
-    if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
+    if (ks.fn && isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
         if (!gbcFullScreen) gbcFullScreen = true;
         gbcZoomPercent = (gbcZoomPercent < 150) ? (gbcZoomPercent + 1) : 150;
         return dummy_ret;
     }
-    if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
+    if (ks.fn && isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
         if (!gbcFullScreen) gbcFullScreen = true;
         gbcZoomPercent = (gbcZoomPercent > 100) ? (gbcZoomPercent - 1) : 100;
         return dummy_ret;
