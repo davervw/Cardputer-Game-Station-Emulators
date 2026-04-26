@@ -9,14 +9,17 @@
 #include "a7800_config.h"
 #include "a7800_video.h"
 #include "share/emu_log_cpp.h"
+#include "../ble_input/ble_input.h"
 
 static constexpr uint32_t kBacktickLongPressMs = 700;
 static uint32_t s_backtickPressedMs = 0;
 static bool s_backtickLongHandled = false;
 
+static BleInput* bleInput = (BleInput*)0;
+
 static inline bool a7800_key(char key)
 {
-    return M5Cardputer.Keyboard.isKeyPressed(key);
+    return M5Cardputer.Keyboard.isKeyPressed(key) || bleInput->isKeyPressed(key);
 }
 
 static void a7800_apply_system_keys(const Keyboard_Class::KeysState& keys)
@@ -46,6 +49,7 @@ void a7800_input_init(void)
 {
     s_backtickPressedMs = 0;
     s_backtickLongHandled = false;
+    bleInput = new BleInput();
 }
 
 void a7800_input_poll(A7800InputState* state)
@@ -55,6 +59,7 @@ void a7800_input_poll(A7800InputState* state)
     }
 
     M5Cardputer.update();
+    bleInput->handle();
     Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 
     share::checkCommonInput(ks);
@@ -100,52 +105,52 @@ void a7800_input_poll(A7800InputState* state)
     }
 
     // ================== DIRECTIONS ==================
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_2)) {
+    if (a7800_key(CARDPUTER_LEFT_1) ||
+        a7800_key(CARDPUTER_LEFT_2)) {
         left = true;
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_2)) {
+    if (a7800_key(CARDPUTER_RIGHT_1) ||
+        a7800_key(CARDPUTER_RIGHT_2)) {
         right = true;
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_2)) {
+    if (a7800_key(CARDPUTER_UP_1) ||
+        a7800_key(CARDPUTER_UP_2)) {
         up = true;
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_3)) {
+    if (a7800_key(CARDPUTER_DOWN_1) ||
+        a7800_key(CARDPUTER_DOWN_2) ||
+        a7800_key(CARDPUTER_DOWN_3)) {
         down = true;
     }
 
     // ================== BOUTONS 7800 ==================
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1) ||
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2)) {
+    if (a7800_key(CARDPUTER_BTN_A_1) ||
+        a7800_key(CARDPUTER_BTN_A_2)) {
         fire2 = true;
     }
         
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B)) {
+    if (a7800_key(CARDPUTER_BTN_B)) {
         fire1 = true;
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_SELECT)) {
+    if (a7800_key(CARDPUTER_BTN_SELECT)) {
         select = true;
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START)) {
+    if (a7800_key(CARDPUTER_BTN_START)) {
         reset = true;
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed('3')) {
+    if (a7800_key('3')) {
         pause = true;
     }
 
     // ================== SCREEN MODE ==================
     if (M5Cardputer.Keyboard.isChange() &&
-        M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
+        a7800_key(CARDPUTER_SCREEN_TOGGLE)) {
         if (ks.fn) {
             a7800_config_toggle_internal_view_mode();
             EMU_LOG("[A7800][DISP] internal view=%s\n",
@@ -156,11 +161,11 @@ void a7800_input_poll(A7800InputState* state)
     }
 
     // ================== ZOOM ==================
-    if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
+    if (ks.fn && a7800_key(CARDPUTER_ZOOM_PLUS)) {
         a7800_video_adjust_zoom(+1);
     }
 
-    if (ks.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
+    if (ks.fn && a7800_key(CARDPUTER_ZOOM_MINUS)) {
         a7800_video_adjust_zoom(-1);
     }
 

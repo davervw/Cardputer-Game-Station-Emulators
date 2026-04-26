@@ -2,18 +2,27 @@
 
 #include <M5Cardputer.h>
 #include "share/input.h"
+#include "../ble_input/ble_input.h"
 
 extern bool fullscreenMode;
 extern int nesZoomPercent;
 
+static BleInput* bleInput = (BleInput*)0;
+
 extern "C" {
 
 void controller_init() {
-  // nothing to do
+  bleInput = new BleInput();
+}
+
+bool isKeyPressed(char key)
+{
+    return M5Cardputer.Keyboard.isKeyPressed(key) || bleInput->isKeyPressed(key);
 }
 
 uint32_t controller_read_input() {
     uint32_t value = 0xFFFFFFFF;
+    bleInput->handle();
     M5Cardputer.update();
     Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
 
@@ -30,7 +39,7 @@ uint32_t controller_read_input() {
     }
     
     // Zoom control and screen mode toggle
-    if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
+    if (M5Cardputer.Keyboard.isChange() && isKeyPressed(CARDPUTER_SCREEN_TOGGLE)) {
         if (!fullscreenMode) {
             fullscreenMode = true;
             nesZoomPercent = 100;
@@ -45,7 +54,7 @@ uint32_t controller_read_input() {
     }
 
     // Zoom in / out
-    if (status.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
+    if (status.fn && isKeyPressed(CARDPUTER_ZOOM_PLUS)) {
         if (!fullscreenMode) fullscreenMode = true;
         nesZoomPercent+= 1;
         if (nesZoomPercent > 150) nesZoomPercent = 150;
@@ -53,7 +62,7 @@ uint32_t controller_read_input() {
 
     }
 
-    if (status.fn && M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
+    if (status.fn && isKeyPressed(CARDPUTER_ZOOM_MINUS)) {
         if (!fullscreenMode) fullscreenMode = true;
         nesZoomPercent-= 1;
         if (nesZoomPercent < 100) nesZoomPercent = 100;
@@ -61,32 +70,32 @@ uint32_t controller_read_input() {
     }
  
     // Arrows and buttons
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_LEFT_2)) {
+    if (isKeyPressed(CARDPUTER_LEFT_1) || isKeyPressed(CARDPUTER_LEFT_2)) {
         value ^= (1 << 2); // left
     }
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_RIGHT_2)) {
+    if (isKeyPressed(CARDPUTER_RIGHT_1) || isKeyPressed(CARDPUTER_RIGHT_2)) {
         value ^= (1 << 3); // right
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_UP_2)) {
+    if (isKeyPressed(CARDPUTER_UP_1) || isKeyPressed(CARDPUTER_UP_2)) {
         value ^= (1 << 0); // up
     }
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_2) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_DOWN_3)) {
+    if (isKeyPressed(CARDPUTER_DOWN_1) || isKeyPressed(CARDPUTER_DOWN_2) || isKeyPressed(CARDPUTER_DOWN_3)) {
         value ^= (1 << 1); // down
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_SELECT)) {
+    if (isKeyPressed(CARDPUTER_BTN_SELECT)) {
         value ^= (1 << 4); // select
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_START)) {
+    if (isKeyPressed(CARDPUTER_BTN_START)) {
         value ^= (1 << 5); // start
     }
 
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_1) || M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_A_2)) {
+    if (isKeyPressed(CARDPUTER_BTN_A_1) || isKeyPressed(CARDPUTER_BTN_A_2)) {
         value ^= (1 << 6); // A
     }
-    if (M5Cardputer.Keyboard.isKeyPressed(CARDPUTER_BTN_B)) {
+    if (isKeyPressed(CARDPUTER_BTN_B)) {
         value ^= (1 << 7); // B
     }
 
