@@ -11,21 +11,11 @@
 #include <stdint.h>
 #include <string.h>
 #include "nes/run_nes.h"
-#include "sms/run_sms.h"
-#include "ngp/run_ngp.h"
-#include "ws/run_ws.h"
-#include "pce/run_pce.h"
-#include "lynx/run_lynx.h"
-#include "genesis/run_genesis.h"
 #include "gbc/run_gbc.h"
-#include "msx/run_msx.h"
-#include "snes/run_snes.h"
 #include "atari7800/run_a7800.h"
 #include "atari2600/run_a2600.h"
-#include "gx4000/run_gx4000.h"
 #include "last_game.h"
 #define RETRO_COMPAT_IMPLEMENTATION
-#include "ngp/race/retro_compat.h"
 #include "esp_task_wdt.h"
 #include "share/input.h"
 #include "share/emu_log_cpp.h"
@@ -189,63 +179,18 @@ void setup() {
       romName = "/xip/" + romName;
       run_nes(romName.c_str());
   }
-  else if (ext == ROM_TYPE_GAMEGEAR || ext == ROM_TYPE_SMS || ext == ROM_TYPE_SG1000 || ext == ROM_TYPE_COLECO) {
-      // --- SMS family (SMS / GG / SG-1000 / ColecoVision) ---
-      SmsConsoleMode mode = SMS_MODE_SMS;
-      if (ext == ROM_TYPE_GAMEGEAR) mode = SMS_MODE_GG;
-      else if (ext == ROM_TYPE_SG1000) mode = SMS_MODE_SG1000;
-      else if (ext == ROM_TYPE_COLECO) mode = SMS_MODE_COLECO;
-      run_sms(get_rom_ptr(), get_rom_size(), mode, romName.c_str());
-  }
-  else if (ext == ROM_TYPE_NGP) {
-      // --- Neo Geo Pocket / Color ---
-      int machine = detectNeoGeoPocketFromRom(get_rom_ptr(), get_rom_size(), romPath);
-      run_ngp(get_rom_ptr(), get_rom_size(), romName.c_str(), machine);
-  }
-  else if (ext == ROM_TYPE_GENESIS) {
-      // --- Megadrive / Genesis ---
-      run_genesis(get_rom_ptr(), get_rom_size(), romName.c_str());
-  }
-  else if (ext == ROM_TYPE_WS) {
-      // --- WonderSwan / Color ---
-      run_ws(get_rom_ptr(), get_rom_size(), romName.c_str(), detectWonderSwanFromRom(romPath));
-  }
-  else if (ext == ROM_TYPE_PCE) {
-      // --- PC Engine / TurboGrafx-16 ---
-      run_pce(get_rom_ptr(), get_rom_size(), romName.c_str());
-  }
   else if (ext == ROM_TYPE_GB) { 
       // --- Game Boy / Color ---
       run_gbc(get_rom_ptr(), get_rom_size(), romName.c_str());
   }
-  else if (ext == ROM_TYPE_LYNX) {
-      // --- Lynx ---
-      run_lynx(get_rom_ptr(), get_rom_size(), romName.c_str());
-  }
-  else if (ext == ROM_TYPE_SNES) {
-      // --- SNES / Super Famicom ---
-      display.displaySnesInfo();
-      input.waitPress();
-      run_snes(get_rom_ptr(), get_rom_size(), romName.c_str());
-  }
-  else if (ext == ROM_TYPE_MSX) {
-      // --- MSX ---
-      display.displayMsxInfo();
-      input.waitPress();
-      run_msx(get_rom_ptr(), get_rom_size(), romName.c_str(), romPath.c_str());
-  }
   else if (ext == ROM_TYPE_ATARI7800) {
       // --- Atari 7800 ---
       run_a7800(get_rom_ptr(), get_rom_size(), romName.c_str());
-  }
+  }  
   else if (ext == ROM_TYPE_ATARI2600) {
       // --- Atari 2600 ---
       run_a2600(get_rom_ptr(), get_rom_size(), romName.c_str());
   }
-    else if (ext == ROM_TYPE_GX4000) {
-      // --- Amstrad GX4000 ---
-      run_gx4000(get_rom_ptr(), get_rom_size(), romName.c_str());
-    }
   else {
       display.topBar("ERROR", false, false);
       display.subMessage("Unsupported ROM type", 0);
