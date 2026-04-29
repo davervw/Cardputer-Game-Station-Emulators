@@ -4,9 +4,9 @@
 #include "BLEDevice.h"
 
 // The remote service we wish to connect to.
-static BLEUUID serviceUUID("b496c097-3364-43e6-b3ee-b59d1d4d9e34"); // Commodore 64/128 BLE Keyboard Service
+static BLEUUID serviceUUID("b496c097-3364-43e6-b3ee-b59d1d4d9e34"); // Custom BLE GamePad Keyboard Service
 // The characteristic of the remote service we are interested in.
-static BLEUUID    charUUID("050c1c21-cc9f-4281-ac9c-242f1dbb67e8"); // Commodore 64/128 BLE Keyboard Scan Characteristic
+static BLEUUID    charUUID("050c1c21-cc9f-4281-ac9c-242f1dbb67e8"); // Custom BLE GamePad Characteristic
 
 static bool doConnect = false;
 static bool connected = false;
@@ -15,49 +15,6 @@ static BLERemoteCharacteristic* pRemoteCharacteristic;
 static BLEAdvertisedDevice* myDevice;
 
 static String keysPressed = "";
-// static bool keysChanged = false;
-
-// class KeyboardQueue
-// {
-// private:
-//   int queue_size = 5;
-//   int head;
-//   int tail;
-//   String* queue;
-
-// public:
-//   KeyboardQueue()
-//   {
-//     head = tail = 0;
-//     queue = new String[queue_size];
-//   }
-
-//   ~KeyboardQueue()
-//   {
-//     delete [] queue;
-//   }
-
-//   bool Enqueue(String s)
-//   {
-//     int next_head = (head + 1) % queue_size;
-//     if (next_head == tail)
-//       return false;
-//     queue[head] = s;
-//     head = next_head;
-//     return true;
-//   }
-
-//   bool Dequeue(String &s)
-//   {
-//     if (head == tail)
-//       return false;
-//     s = queue[tail];
-//     tail = (tail + 1) % queue_size;
-//     return true;
-//   }
-// };
-
-// KeyboardQueue* kbdqueue = new KeyboardQueue();
 
 static void notifyCallback(
   BLERemoteCharacteristic* pBLERemoteCharacteristic,
@@ -70,7 +27,6 @@ static void notifyCallback(
     // if (length < 1 || pData[length-1] != '\n')
     //   printf("\n");
 
-    //kbdqueue->Enqueue(String(pData, length));
     keysPressed = String(pData, length);
 }
 
@@ -207,19 +163,7 @@ void ServiceConnection(BleInput* bleInput, bool restart) {
 void BleInput::handle()
 {
     ServiceConnection(this, false);
-    // String s;
-    // if (kbdqueue->Dequeue(s))
-    // {
-    //     keysChanged = !s.equals(keysPressed);
-    //     if (!keysChanged)
-    //         keysPressed = s;
-    // }
 }
-
-// bool BleInput::isChange()
-// {
-//     return keysChanged;
-// }
 
 bool BleInput::isKeyPressed(char key)
 {
