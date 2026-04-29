@@ -1,5 +1,14 @@
 # Cardputer Game Station
 
+This version is a fork from [geo-tp/Cardputer-Game-Station-Emulators v1.2](https://github.com/geo-tp/Cardputer-Game-Station-Emulators) for the sole purpose of adding BLE gamepad support
+
+## ***NEW*** Kano Pixel Kit as BLE gamepad
+Code additions from [davervw](https://github.com/davervw): Kano hardware supplies joystick and two buttons along with 16x8 NeoPixel display.  In addition to flashing this update to Game Station for Cardputer (StampS3), the ble_gamepad project must be separately flashed to the Kano Pixel Kit (ESP32-WROOM-32).
+
+Flashing Blue means BLE is functioning.  Green means linked.  Amber not linked.
+
+![Kano Pixel Kit gamepad in action](images/KanoPixelKit_GamePad.jpg)
+
 ![NES emulator screen captures on the M5Stack Cardputer](images/nes_emulator_s.jpg)
 ![GBC emulator screen captures on the M5Stack Cardputer](images/gbc_emulator_s.jpg)
 ![SMS emulator screen captures on the M5Stack Cardputer](images/sms_emulator_s.jpg)
@@ -14,23 +23,10 @@ All cores were optimized to run within a memory footprint of **under 256 KB of R
 |-------------------|--------|--------|---------------|-------------|-------------------|--------|
 | **NES**           | ✅ | ✅ | ✅  | ✅ | ✅ | Few mappers issues in some games |
 | **Game Boy**      | ✅ | ✅ | ✅  | ✅ | ✅ | Mono/Color support, Fully compatible |
-| **Master System** | ✅ | ✅ | ✅  | ✅ | ✅ | Fully compatible |
-| **Game Gear**     | ✅ | ✅ | ✅  | ✅ | ✅ | Fully compatible |
-| **SG-1000**       | ✅ | ✅ | N/A | ✅ | ✅ | Fully compatible  |
-| **Mega Drive**    | ✅ | ✅ | ✅  | ✅ | ✅ | Some slowdown and not accurate sound in heavy titles |
-| **Neo Geo Pocket**| ✅ | ✅ | ✅  | ✅ | ✅ | Mono/color support. Some slowdown in heavy titles |
-| **ColecoVision**  | ✅ | ✅ | N/A | ✅ | ✅ | Fully compatible  |
-| **PC Engine**     | ✅ | ✅ | N/A | ✅ | ✅ | Fully compatible |
-| **MSX**           | ✅ | ✅ | ✅  | ✅ | ✅ | Fully compatible (MSX1 games only)|
 | **Atari 2600**    | ✅ | ✅ | N/A | ✅ | ✅ | Few cart mappers not supported |
 | **Atari 7800**    | ✅ | ✅ | N/A | ⚠️ | ✅ | Not full speed in some games |
-| **Lynx**          | ✅ | ✅ | ⚠️  | ✅ | ✅ | Some slowdown in heavy titles, Sound issues in some games  |
-| **GX4000**        | ✅ | ✅ | N/A | ✅  | ⚠️ | Some emulation issues in some games |
-| **WonderSwan**    | ✅ | ✅ | ✅  | ⚠️ | ⚠️ | Mono/color support, not fullspeed (75FPS) in most games  |
-| **Super NES**     | ⚠️ | ✅ | ✅  | ⚠️ | ⚠️ | Experimental, not enough RAM for a full featured SNES  |
 
-
-It runs **`.nes` `.gb` `.gbc` `.sms` `.gg` `.sg` `.md` `.ngc` `.ngp` `.col` `.pce` `.mx1` `.rom` `.a26` `.a78` `.lnx` `.cpr` `.ws` `.wsc` `.sfc`  ROM files from the SD**.
+It runs **`.nes` `.gb` `.gbc` `.a26` `.a78` ROM files from the SD**.
 
 > **Make sure your ROMs are uncompressed** (not .zip, .7z, or .rar).
 
@@ -60,8 +56,6 @@ The built-in **Cardputer keyboard** is used for all controls:
 > The `j` key is also bound as Button A to allow an alternative layout for player preference.
 
 > The `z` key is also bound as Arrow Down to allow the use of a D-PAD.
-
-> On the MSX emulator, press `FN+key` to type normal keyboard keys instead of joystick inputs.
 
 ## M5Stack Joystick
 

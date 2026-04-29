@@ -1,9 +1,9 @@
 /*
-    BLE_commodore_keyboard_server.ino
+    main.cpp
 
-    BLE Commodore Keyboard Server
-    for c-simple-emu-cbm (C Portable Version)
+    BLE GamePad Server
     by David R. Van Wagner davevw.com
+    HISTORY: derived from my own https://github.com/davervw/c-simple-emu6502-cbm/tree/unified/src/BLE_commodore_keyboard_server
     Changes are open source, MIT License
     (Based on ESP32 BLE Arduino : BLE_server)
 
@@ -18,10 +18,10 @@
 #include <BLEUtils.h>
 #include <BLEServer.h>
 
-// Commodore 64/128 BLE Keyboard Service
+// Custom BLE Gamepad Service
 #define SERVICE_UUID        "b496c097-3364-43e6-b3ee-b59d1d4d9e34"
 
-// Commodore 64/128 BLE Keyboard Scan Characteristic
+// Custom 64/128 BLE Gamepad Scan Characteristic
 #define CHARACTERISTIC_UUID "050c1c21-cc9f-4281-ac9c-242f1dbb67e8"
 
 BLECharacteristic *pCharacteristic;
