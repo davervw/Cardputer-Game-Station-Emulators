@@ -21,7 +21,7 @@
 // Custom BLE Gamepad Service
 #define SERVICE_UUID        "b496c097-3364-43e6-b3ee-b59d1d4d9e34"
 
-// Custom 64/128 BLE Gamepad Scan Characteristic
+// Custom BLE Gamepad Scan Characteristic
 #define CHARACTERISTIC_UUID "050c1c21-cc9f-4281-ac9c-242f1dbb67e8"
 
 BLECharacteristic *pCharacteristic;
@@ -117,8 +117,8 @@ void setup()
 
   //Serial.begin(115200);
 
-  //Serial.println("Starting Commodore Emulator BLE Keyboard Service for Kano Pixel Kit");
-  BLEDevice::init("Commodore 64/128 BLE Keyboard Service");
+  //Serial.println("Starting BLE Gamepad Service for Kano Pixel Kit");
+  BLEDevice::init("Custom BLE Gamepad Service");
 
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
@@ -141,7 +141,7 @@ void setup()
 
   matrix.setPixelColor(31, 0xFF8000); // orange on start (disconnected)
 
-  //Serial.println("Started Commodore 64/128 BLE Keyboard Service");
+  //Serial.println("Started Custom BLE Gamepad Service");
 }
 
 // Function to set entire matrix to one color
