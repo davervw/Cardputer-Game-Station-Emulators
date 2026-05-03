@@ -42,14 +42,14 @@ BLECharacteristic *pCharacteristic;
 Adafruit_NeoPixel matrix = Adafruit_NeoPixel(NUM_PIXELS, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 const char *image[8] = {
-  "GGGGGGGGGGGGGGGG",
-  "GGWWWGGGGGGGGWGG",
-  "GWW WWGGGGGGWRWG",
-  "WWW WWWGGGWWRRRW",
-  "W     WGGWRWWRWG",
-  "WWW WWWGWRRRWWGG",
-  "GWW WWGGGWRWGGGG",
-  "GGWWWGGGGGWGGGGG",
+  "                ",
+  "  WWWWWWWWWWWW  ",
+  " WW WWWWWWWWRWW ",
+  "WWW WWWWWWWRRRWW",
+  "W     WWWRWWRWWW",
+  "WWW WWWWRRRWWWWW",
+  " WW WWWWWRWWWWW ",
+  "  WWWWWWWWWWWW  ",
 };
 
 void drawController()
@@ -80,7 +80,7 @@ void drawController()
       matrix.setPixelColor(i++, color);
     }
   }
-  // Push pixel updates to the strip/matrix
+  // Push pixel updates to the matrix
   matrix.show();
 }
 
@@ -88,14 +88,12 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
       // Stage: Connected
       matrix.setPixelColor(31, 0x00FF00); // Turn Green on connect
-      matrix.show();
       //Serial.println("Connected");
     };
 
     void onDisconnect(BLEServer* pServer) {
       // Stage: Disconnected
       matrix.setPixelColor(31, 0xFF8000); // Turn Orange on disconnect
-      matrix.show();
       //Serial.println("Disconnected");
       
       // Stage: Advertising (Restart so it can be found again)
@@ -115,7 +113,6 @@ void setup()
 
   matrix.begin();
   matrix.setBrightness(10); // Set moderate brightness
-  matrix.show();
   drawController();
 
   //Serial.begin(115200);
@@ -143,7 +140,6 @@ void setup()
   BLEDevice::startAdvertising();
 
   matrix.setPixelColor(31, 0xFF8000); // orange on start (disconnected)
-  matrix.show();
 
   //Serial.println("Started Commodore 64/128 BLE Keyboard Service");
 }
@@ -219,10 +215,49 @@ String ButtonStateToString(ButtonState state)
   if (value & ButtonState::LEFT) Append(s, "a");
   if (value & ButtonState::RIGHT) Append(s, "d");
   //if (value & ButtonState::CENTER) Append(s, "");
-  // if (s.isEmpty())
-  //   s = "64"; // No buttons/keys pressed
   s += "\n"; // Newline for easier parsing on client side
   return s;
+}
+
+void DrawButtonState(ButtonState state)
+{
+  static const auto yellow = matrix.Color(255, 255, 0);
+  static const auto red = matrix.Color(255, 0, 0);
+  static const auto black = matrix.Color(0, 0, 0);
+  static const auto purple = matrix.Color(127, 0, 255);
+  static const auto cyan = matrix.Color(0, 255, 255);
+  static const auto magenta = matrix.Color(255, 0, 255);
+  static const auto pink = matrix.Color(255, 0, 127);
+  int value = static_cast<int>(state);
+  String s = "";
+
+  matrix.setPixelColor(44, value & ButtonState::A ? yellow : red);
+  matrix.setPixelColor(59, value & ButtonState::A ? yellow : red);
+  matrix.setPixelColor(60, value & ButtonState::A ? yellow : red);
+  matrix.setPixelColor(61, value & ButtonState::A ? yellow : red);
+  matrix.setPixelColor(76, value & ButtonState::A ? yellow : red);
+
+  matrix.setPixelColor(73, value & ButtonState::B ? cyan : red);
+  matrix.setPixelColor(88, value & ButtonState::B ? cyan : red);
+  matrix.setPixelColor(89, value & ButtonState::B ? cyan : red);
+  matrix.setPixelColor(90, value & ButtonState::B ? cyan : red);
+  matrix.setPixelColor(105, value & ButtonState::B ? cyan : red);
+  
+  matrix.setPixelColor(35, value & ButtonState::UP ? purple : black);
+  matrix.setPixelColor(51, value & ButtonState::UP ? purple : black);
+
+  matrix.setPixelColor(83, value & ButtonState::DOWN ? purple : black);
+  matrix.setPixelColor(99, value & ButtonState::DOWN ? purple : black);
+
+  matrix.setPixelColor(65, value & ButtonState::LEFT ? purple : black);
+  matrix.setPixelColor(66, value & ButtonState::LEFT ? purple : black);
+
+  matrix.setPixelColor(68, value & ButtonState::RIGHT ? purple : black);
+  matrix.setPixelColor(69, value & ButtonState::RIGHT ? purple : black);
+
+  matrix.setPixelColor(67, value & ButtonState::CENTER ? pink : black);
+
+  matrix.show();
 }
 
 void checkForReset(ButtonState buttonState)
@@ -250,7 +285,7 @@ void checkForReset(ButtonState buttonState)
   if (millis() - whenReset < 1000)
     return;
   
-  fillMatrix(0);
+  fillMatrix(0x000000);
 
   while (ReadButtonState() != ButtonState::NONE);
 
@@ -273,6 +308,7 @@ void loop() {
   lastState = buttonState;
   auto s = ButtonStateToString(buttonState);
   SendButtonState(s);
+  DrawButtonState(buttonState);
 
   //Serial.print("Button state changed: ");
   //Serial.println(buttonState);
