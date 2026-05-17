@@ -1,11 +1,12 @@
 /*
     main.cpp
 
-    BLE GamePad Server
+    BLE GamePad Controller for Kano Pixel Kit (ESP-WROOM-32 + NeoPixel Matrix)
     by David R. Van Wagner davevw.com
     HISTORY: derived from my own https://github.com/davervw/c-simple-emu6502-cbm/tree/unified/src/BLE_commodore_keyboard_server
     Changes are open source, MIT License
-    (Based on ESP32 BLE Arduino : BLE_server)
+    (Based on ESP32 BLE Arduino : BLE_server
+    with BleGamepad library use added for standard BLE Gamepad HID support)
 
     Original comments:
     Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleServer.cpp
@@ -14,18 +15,7 @@
 */
 
 #include <Arduino.h>
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
-
-// Custom BLE Gamepad Service
-#define SERVICE_UUID        "b496c097-3364-43e6-b3ee-b59d1d4d9e34"
-
-// Custom BLE Gamepad Scan Characteristic
-#define CHARACTERISTIC_UUID "050c1c21-cc9f-4281-ac9c-242f1dbb67e8"
-
-BLECharacteristic *pCharacteristic;
-
+#include <BleGamepad.h>
 #include <Adafruit_NeoPixel.h>
 
 // PIN CONFIGURATION
@@ -39,17 +29,33 @@ BLECharacteristic *pCharacteristic;
 #define JOY_RIGHT 25
 #define JOY_CLICK 27
 
+enum ButtonState
+{
+  UNKNOWN = -1,
+  NONE = 0,
+  A = 1,
+  B = 2,
+  UP = 4,
+  DOWN = 8,
+  LEFT = 16,
+  RIGHT = 32,
+  CENTER = 64
+};
+
 Adafruit_NeoPixel matrix = Adafruit_NeoPixel(NUM_PIXELS, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
+BleGamepad bleGamepad("Kano Pixel Kit Gamepad", "Arduino", 100);
+BleGamepadConfiguration bleGamepadConfig;
+ButtonState lastState = ButtonState::UNKNOWN;
 
 const char *image[8] = {
-  "                ",
-  "  WWWWWWWWWWWW  ",
-  " WW WWWWWWWWRWW ",
-  "WWW WWWWWWWRRRWW",
-  "W     WWWRWWRWWW",
-  "WWW WWWWRRRWWWWW",
-  " WW WWWWWRWWWWW ",
-  "  WWWWWWWWWWWW  ",
+    "                ",
+    "  WWWWWWWWWWWW  ",
+    " WW WWWWWWWWRWW ",
+    "WWW WWWWWWWRRRWW",
+    "W     WWWRWWRWWW",
+    "WWW WWWWRRRWWWWW",
+    " WW WWWWWRWWWWW ",
+    "  WWWWWWWWWWWW  ",
 };
 
 void drawController()
@@ -61,9 +67,9 @@ void drawController()
   auto colorNothing = matrix.Color(0, 0, 0);
 
   int i = 0;
-  for (int y=0; y<8; ++y)
+  for (int y = 0; y < 8; ++y)
   {
-    for (int x=0; x<16; ++x)
+    for (int x = 0; x < 16; ++x)
     {
       uint32_t color;
       char c = image[y][x];
@@ -84,21 +90,17 @@ void drawController()
   matrix.show();
 }
 
-class MyServerCallbacks: public BLEServerCallbacks {
-    void onConnect(BLEServer* pServer) {
-      // Stage: Connected
-      matrix.setPixelColor(31, 0x00FF00); // Turn Green on connect
-      //Serial.println("Connected");
-    };
+class MyGamepadCallbacks : public NimBLEServerCallbacks
+{
+  void onConnect(NimBLEServer *pServer) {
+    // Serial.println(">> Callback: Device Connected!");
+  };
 
-    void onDisconnect(BLEServer* pServer) {
-      // Stage: Disconnected
-      matrix.setPixelColor(31, 0xFF8000); // Turn Orange on disconnect
-      //Serial.println("Disconnected");
-      
-      // Stage: Advertising (Restart so it can be found again)
-      BLEDevice::startAdvertising();
-    }
+  void onDisconnect(NimBLEServer *pServer)
+  {
+    // Serial.println(">> Callback: Device Disconnected! Restarting advertising...");
+    //  Re-advertising is typically handled by the library, but you can trigger custom logic here
+  }
 };
 
 void setup()
@@ -115,33 +117,33 @@ void setup()
   matrix.setBrightness(10); // Set moderate brightness
   drawController();
 
-  //Serial.begin(115200);
+  // Serial.begin(115200);
 
-  //Serial.println("Starting BLE Gamepad Service for Kano Pixel Kit");
-  BLEDevice::init("Custom BLE Gamepad Service");
+  // --- HID Report Map Configuration ---
+  bleGamepadConfig.setAutoReport(false); // Best practice: manual reports
+  bleGamepadConfig.setButtonCount(3);    // Button 1 (A), 2 (B), 3 (D-pad Center)
+  bleGamepadConfig.setHatSwitchCount(1); // One D-pad (Point of View Hat)
 
-  BLEServer *pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
-  BLEService *pService = pServer->createService(SERVICE_UUID);
-  pCharacteristic = pService->createCharacteristic(
-                                         CHARACTERISTIC_UUID,
-                                         BLECharacteristic::PROPERTY_READ |
-                                         BLECharacteristic::PROPERTY_NOTIFY
-                                       );
+  // Parameters: (X, Y, Z, RX, RY, RZ, Slider1, Slider2)
+  bleGamepadConfig.setWhichAxes(true, false, false, false, false, false, false, false);
 
-  pCharacteristic->setValue("");
-  pService->start();
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-  pAdvertising->addServiceUUID(SERVICE_UUID);
-  pAdvertising->setScanResponse(true);
-  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
-  pAdvertising->setMaxPreferred(0x12);
+  bleGamepadConfig.setControllerType(CONTROLLER_TYPE_GAMEPAD);
 
-  BLEDevice::startAdvertising();
+  // Apply the configuration
+  bleGamepad.begin(&bleGamepadConfig);
 
   matrix.setPixelColor(31, 0xFF8000); // orange on start (disconnected)
 
-  //Serial.println("Started Custom BLE Gamepad Service");
+// Get the global advertising object
+  NimBLEAdvertising* pAdvertising = NimBLEDevice::getAdvertising(); 
+
+  // Add the HID Service UUID (0x1812) to the advertisement data
+  pAdvertising->addServiceUUID(BLEUUID((uint16_t)0x1812));
+
+  // Restart advertising to apply changes
+  pAdvertising->start();
+
+  // Serial.println("Started Custom BLE Gamepad Service");
 }
 
 // Function to set entire matrix to one color
@@ -158,7 +160,8 @@ void serviceLED()
   static bool state = false;
 
   long now = millis();
-  if ((now - then) >= 1000) {
+  if ((now - then) >= 1000)
+  {
     state = !state;
     if (state)
       matrix.setPixelColor(15, matrix.Color(0, 0, 255));
@@ -168,18 +171,6 @@ void serviceLED()
     then = now;
   }
 }
-
-enum ButtonState {
-  UNKNOWN = -1,
-  NONE = 0,
-  A = 1,
-  B = 2,
-  UP = 4,
-  DOWN = 8,
-  LEFT = 16,
-  RIGHT = 32,
-  CENTER = 64
-};
 
 int buttonPins[] = {BUTTON_A, BUTTON_B, JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_CLICK};
 const int buttonCount = sizeof(buttonPins) / sizeof(buttonPins[0]);
@@ -193,30 +184,6 @@ ButtonState ReadButtonState()
       state |= (1 << i);
   }
   return static_cast<ButtonState>(state);
-}
-
-ButtonState lastState = ButtonState::UNKNOWN;
-
-void Append (String &s, const char *value)
-{
-  // if (!s.isEmpty())
-  //   s += ",";
-  s += value;
-}
-
-String ButtonStateToString(ButtonState state)
-{
-  int value = static_cast<int>(state);
-  String s = "";
-  if (value & ButtonState::A) Append(s, "l");
-  if (value & ButtonState::B) Append(s, "k");
-  if (value & ButtonState::UP) Append(s, "e");
-  if (value & ButtonState::DOWN) Append(s, "s");
-  if (value & ButtonState::LEFT) Append(s, "a");
-  if (value & ButtonState::RIGHT) Append(s, "d");
-  //if (value & ButtonState::CENTER) Append(s, "");
-  s += "\n"; // Newline for easier parsing on client side
-  return s;
 }
 
 void DrawButtonState(ButtonState state)
@@ -242,7 +209,7 @@ void DrawButtonState(ButtonState state)
   matrix.setPixelColor(89, value & ButtonState::B ? cyan : red);
   matrix.setPixelColor(90, value & ButtonState::B ? cyan : red);
   matrix.setPixelColor(105, value & ButtonState::B ? cyan : red);
-  
+
   matrix.setPixelColor(35, value & ButtonState::UP ? purple : black);
   matrix.setPixelColor(51, value & ButtonState::UP ? purple : black);
 
@@ -264,53 +231,135 @@ void checkForReset(ButtonState buttonState)
 {
   static long whenReset = 0; // Time when reset first pressed
 
-  bool isReset = (
-    (buttonState & ButtonState::A) == ButtonState::A
-    && (buttonState & ButtonState::B) == ButtonState::B
-    && (buttonState & ButtonState::CENTER) == ButtonState::CENTER
-  );
+  bool isReset = ((buttonState & ButtonState::A) == ButtonState::A && (buttonState & ButtonState::B) == ButtonState::B && (buttonState & ButtonState::CENTER) == ButtonState::CENTER);
 
   if (!isReset)
     return;
 
-  bool wasReset = (
-    (lastState & ButtonState::A) == ButtonState::A
-    && (lastState & ButtonState::B) == ButtonState::B
-    && (lastState & ButtonState::CENTER) == ButtonState::CENTER
-  );
+  bool wasReset = ((lastState & ButtonState::A) == ButtonState::A && (lastState & ButtonState::B) == ButtonState::B && (lastState & ButtonState::CENTER) == ButtonState::CENTER);
 
   if (!wasReset)
     whenReset = millis();
 
   if (millis() - whenReset < 1000)
     return;
-  
+
   fillMatrix(0x000000);
 
-  while (ReadButtonState() != ButtonState::NONE);
+  while (ReadButtonState() != ButtonState::NONE)
+    ;
 
   esp_restart();
 }
 
-void SendButtonState(String s)
+void SendButtonState(ButtonState buttonState)
 {
-  pCharacteristic->setValue(s.c_str());
-  pCharacteristic->notify();
+  const int updateInterval = 16; // ~60 updates per second
+  static unsigned long lastUpdate = -updateInterval; // Initialize to allow immediate update on first run
+  if (millis() - lastUpdate < updateInterval)
+    return; // Skip update if interval hasn't passed
+  lastUpdate = millis();
+
+  // Send button states to the connected BLE client
+  if ((buttonState & ButtonState::A) == ButtonState::A)
+    bleGamepad.press(1);
+  else
+    bleGamepad.release(1);
+  if ((buttonState & ButtonState::B) == ButtonState::B)
+    bleGamepad.press(2);
+  else
+    bleGamepad.release(2);
+  if ((buttonState & ButtonState::CENTER) == ButtonState::CENTER)
+    bleGamepad.press(3);
+  else
+    bleGamepad.release(3);
+
+  signed char hatValue = DPAD_CENTERED;
+
+  // Define the masks for readability
+  bool up = (buttonState & ButtonState::UP);
+  bool down = (buttonState & ButtonState::DOWN);
+  bool left = (buttonState & ButtonState::LEFT);
+  bool right = (buttonState & ButtonState::RIGHT);
+
+  // 1. Handle Diagonals (High Priority)
+  if (up && right)
+    hatValue = DPAD_UP_RIGHT;
+  else if (down && right)
+    hatValue = DPAD_DOWN_RIGHT;
+  else if (down && left)
+    hatValue = DPAD_DOWN_LEFT;
+  else if (up && left)
+    hatValue = DPAD_UP_LEFT;
+
+  // 2. Handle Cardinal Directions (Medium Priority)
+  else if (up)
+    hatValue = DPAD_UP;
+  else if (down)
+    hatValue = DPAD_DOWN;
+  else if (left)
+    hatValue = DPAD_LEFT;
+  else if (right)
+    hatValue = DPAD_RIGHT;
+
+  // 3. Neutral (Handled by initialization)
+
+  int analogValue = analogRead(36);
+  // Serial.print("Analog value: ");
+  // Serial.println(analogValue);
+  int mappedValue = map(analogValue, 0, 4095, 32767, -32768);
+  // Serial.print("Mapped value: ");
+  // Serial.println(mappedValue);
+
+  // 4. Update the specific axis value based on the paddle position
+  bleGamepad.setX(mappedValue);
+
+  // Also update the hat switch value based on the D-pad state
+  bleGamepad.setHat1(hatValue);
+
+  lastState = buttonState; // used by checkForReset to detect new reset events
+    
+  bleGamepad.sendReport();
 }
 
-void loop() {
+void serviceBLE()
+{
+  bool isConnected = bleGamepad.isConnected();
+  static bool wasConnected = false;
+
+  // Detect JUST CONNECTED
+  if (isConnected && !wasConnected)
+  {
+    // Serial.println(">> EVENT: Gamepad Connected to Host!");
+    matrix.setPixelColor(31, 0x00FF00); // Turn Green on connect
+    matrix.show();
+    wasConnected = true;
+  }
+
+  // Detect JUST DISCONNECTED
+  if (!isConnected && wasConnected)
+  {
+    // Serial.println(">> EVENT: Gamepad Disconnected!");
+    matrix.setPixelColor(31, 0xFF8000); // Turn Orange on disconnect
+    matrix.show();
+    wasConnected = false;
+  }
+}
+
+void loop()
+{
+  serviceBLE();
   serviceLED();
 
   auto buttonState = ReadButtonState();
   checkForReset(buttonState);
-  if (buttonState == lastState)
-    return;
-  lastState = buttonState;
-  auto s = ButtonStateToString(buttonState);
-  SendButtonState(s);
-  DrawButtonState(buttonState);
+  if (bleGamepad.isConnected())
+    SendButtonState(buttonState); // note: checks for analog changes and rate limits internally
+  if (buttonState != lastState)
+    DrawButtonState(buttonState);
 
-  //Serial.print("Button state changed: ");
-  //Serial.println(buttonState);
-  //Serial.println(s.c_str());
+  // Serial.print("Button state changed: ");
+  // Serial.println(buttonState);
+  // Serial.println(s.c_str());
+  delay(10);
 }
