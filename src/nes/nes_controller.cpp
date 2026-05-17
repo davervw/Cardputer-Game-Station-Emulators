@@ -2,27 +2,22 @@
 
 #include <M5Cardputer.h>
 #include "share/input.h"
-#include "../ble_input/ble_input.h"
 
 extern bool fullscreenMode;
 extern int nesZoomPercent;
 
-static BleInput* bleInput = (BleInput*)0;
-
 extern "C" {
 
 void controller_init() {
-  bleInput = new BleInput();
 }
 
 bool isKeyPressed(char key)
 {
-    return M5Cardputer.Keyboard.isKeyPressed(key) || bleInput->isKeyPressed(key);
+    return M5Cardputer.Keyboard.isKeyPressed(key);
 }
 
 uint32_t controller_read_input() {
     uint32_t value = 0xFFFFFFFF;
-    bleInput->handle();
     M5Cardputer.update();
     Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
 

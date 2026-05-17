@@ -4,23 +4,18 @@
 #include "Event.hxx"
 #include "a2600_display.h"
 #include "share/input.h"
-#include "../ble_input/ble_input.h"
-
-static BleInput* bleInput = (BleInput*)0;
 
 void a2600_input_init(void)
 {
-    bleInput = new BleInput();
 }
 
 bool isKeyPressed(char key)
 {
-    return M5Cardputer.Keyboard.isKeyPressed(key) || bleInput->isKeyPressed(key);
+    return M5Cardputer.Keyboard.isKeyPressed(key);
 }
 
 void a2600_input_update(Event& event)
 {
-    bleInput->handle();
     M5Cardputer.update();
     Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 

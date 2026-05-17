@@ -2,7 +2,6 @@
 #include <M5Cardputer.h>
 #include <Arduino.h>
 #include "share/input.h"
-#include "../ble_input/ble_input.h"
 
 extern "C" {
   #include "gnuboy/gnuboy.h"
@@ -13,23 +12,19 @@ extern bool gbcFullScreen;
 extern int  gbcZoomPercent;
 extern int  gbPalette;
 
-static BleInput* bleInput = (BleInput*)0;
-
 extern "C" void gbc_input_init(void)
 {
-    bleInput = new BleInput();
 }
 
 static inline bool isKeyPressed(char key)
 {
-    return M5Cardputer.Keyboard.isKeyPressed(key) || bleInput->isKeyPressed(key);
+    return M5Cardputer.Keyboard.isKeyPressed(key);
 }
 
 extern "C" int gbc_input_poll(void)
 {   
     const int dummy_ret = -1; 
 
-    bleInput->handle();
     M5Cardputer.update();
     Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 

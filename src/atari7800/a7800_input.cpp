@@ -9,17 +9,14 @@
 #include "a7800_config.h"
 #include "a7800_video.h"
 #include "share/emu_log_cpp.h"
-#include "../ble_input/ble_input.h"
 
 static constexpr uint32_t kBacktickLongPressMs = 700;
 static uint32_t s_backtickPressedMs = 0;
 static bool s_backtickLongHandled = false;
 
-static BleInput* bleInput = (BleInput*)0;
-
 static inline bool a7800_key(char key)
 {
-    return M5Cardputer.Keyboard.isKeyPressed(key) || bleInput->isKeyPressed(key);
+    return M5Cardputer.Keyboard.isKeyPressed(key);
 }
 
 static void a7800_apply_system_keys(const Keyboard_Class::KeysState& keys)
@@ -49,7 +46,6 @@ void a7800_input_init(void)
 {
     s_backtickPressedMs = 0;
     s_backtickLongHandled = false;
-    bleInput = new BleInput();
 }
 
 void a7800_input_poll(A7800InputState* state)
@@ -59,7 +55,6 @@ void a7800_input_poll(A7800InputState* state)
     }
 
     M5Cardputer.update();
-    bleInput->handle();
     Keyboard_Class::KeysState ks = M5Cardputer.Keyboard.keysState();
 
     share::checkCommonInput(ks);
