@@ -5,17 +5,20 @@
 #include <esp_system.h>
 #include "game_save.h"
 #include <Preferences.h>
+#include "gamepad.h"
 
 static uint32_t s_lastInputUs = 0;
 uint32_t lastPadState = 0xFFFFFFFF;
 static const uint32_t INPUT_POLL_PERIOD_MS = 32;
 constexpr int64_t INPUT_POLL_PERIOD_US = 1000 * INPUT_POLL_PERIOD_MS;
+uint32_t gamepadState = 0;
 
 // I2C joypad type
 enum I2cPadType : uint8_t {
     I2C_PAD_NONE = 0,
     I2C_PAD_JOYV2,    // M5Stack JoyV2 at 0x63
     I2C_PAD_JOYV1_1,  // M5Stack Joystick v1.1 at 0x52
+    I2C_PAD_BLUETOOTH,// Bluetooth gamepad pretending to be I2C for interfacing with game system
 };
 static I2cPadType s_i2cPadType = I2C_PAD_NONE;
 
@@ -91,6 +94,25 @@ namespace share
         }
     }
 
+    void gamepadUpdate(int dpad, int buttons)
+    {
+        int state = 0;
+        if (dpad & 1)
+            state |= PAD_UP;
+        if (dpad & 2)
+            state |= PAD_DOWN;
+        if (dpad & 4)
+            state |= PAD_RIGHT;
+        if (dpad & 8)
+            state |= PAD_LEFT;
+        if (buttons & 1)
+            state |= PAD_A;
+        if (buttons & 2)
+            state |= PAD_B;
+        Serial.printf("gamepadUpdate: %d %d : %d\n", dpad, buttons, state);
+        gamepadState = state;
+    }
+
     void detectI2cPad()
     {
         Wire.begin(CARDPUTER_I2C_SDA, CARDPUTER_I2C_SCL);
@@ -117,8 +139,14 @@ namespace share
         s_i2cPadType = I2C_PAD_NONE;
         printf("[INPUT] No I2C joystick found (SDA=%d, SCL=%d)\n",
                CARDPUTER_I2C_SDA, CARDPUTER_I2C_SCL);
-               
+
         Wire.end();
+
+        printf("[INPUT] Faking I2C joystick with Bluetooth supported gamepads");
+        s_i2cPadType = I2C_PAD_BLUETOOTH; // for emulating hardware attached controller
+        gamepadState = 0;
+        MyController.onUpdate = gamepadUpdate;
+        MyController.begin();
     }
 
     bool hasI2cPad()
@@ -185,7 +213,11 @@ namespace share
         uint8_t y8 = 0;
         uint8_t btnRaw = 1;  // default to "not pressed"
 
-        if (s_i2cPadType == I2C_PAD_JOYV2) {
+        if (s_i2cPadType == I2C_PAD_BLUETOOTH) {
+            MyController.check();
+            Serial.printf("state = %d\n", (int)gamepadState);
+            return gamepadState;
+        } else if (s_i2cPadType == I2C_PAD_JOYV2) {
             if (!joystick2_read_xy(x8, y8)) return 0;
             joystick2_read_button(btnRaw);
         } else {  // I2C_PAD_JOYV1_1
