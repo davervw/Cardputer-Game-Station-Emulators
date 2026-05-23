@@ -19,7 +19,7 @@ class MyGamepad
 public:
     void begin();
     void check();
-    void (*onUpdate)(int dpad, int buttons) = 0;
+    void (*onUpdate)(int dpad, int buttons, int miscButtons) = 0;
     void (*onDisconnect)() = 0;
 };
 

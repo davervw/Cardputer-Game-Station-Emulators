@@ -32,6 +32,8 @@ uint32_t controller_read_input() {
         if (i2cPad & share::PAD_DOWN)  value ^= (1 << 1); // down
         if (i2cPad & share::PAD_A)     value ^= (1 << 6); // A
         if (i2cPad & share::PAD_B)     value ^= (1 << 7); // B
+        if (i2cPad & share::PAD_SELECT)value ^= (1 << 4); // SELECT
+        if (i2cPad & share::PAD_START) value ^= (1 << 5); // START
     }
     
     // Zoom control and screen mode toggle

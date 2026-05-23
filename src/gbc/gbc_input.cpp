@@ -41,6 +41,8 @@ extern "C" int gbc_input_poll(void)
         if (i2cPad & share::PAD_DOWN)  pad |= GB_PAD_DOWN;
         if (i2cPad & share::PAD_A)     pad |= GB_PAD_A;
         if (i2cPad & share::PAD_B)     pad |= GB_PAD_B;
+        if (i2cPad & share::PAD_SELECT)pad |= GB_PAD_SELECT;
+        if (i2cPad & share::PAD_START) pad |= GB_PAD_START;
     }
 
     // ================== SCREEN MODE ==================

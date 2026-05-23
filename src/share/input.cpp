@@ -94,7 +94,7 @@ namespace share
         }
     }
 
-    void gamepadUpdate(int dpad, int buttons)
+    void gamepadUpdate(int dpad, int buttons, int miscButtons)
     {
         int state = 0;
         if (dpad & 1)
@@ -109,7 +109,11 @@ namespace share
             state |= PAD_A;
         if (buttons & 2)
             state |= PAD_B;
-        Serial.printf("gamepadUpdate: %d %d : %d\n", dpad, buttons, state);
+        if (miscButtons & 2)
+            state |= PAD_SELECT;
+        if (miscButtons & 4)
+            state |= PAD_START;
+        //Serial.printf("gamepadUpdate: %d %d %d: %d\n", dpad, buttons, miscButtons, state);
         gamepadState = state;
     }
 
@@ -215,7 +219,7 @@ namespace share
 
         if (s_i2cPadType == I2C_PAD_BLUETOOTH) {
             MyController.check();
-            Serial.printf("state = %d\n", (int)gamepadState);
+            //Serial.printf("state = %d\n", (int)gamepadState);
             return gamepadState;
         } else if (s_i2cPadType == I2C_PAD_JOYV2) {
             if (!joystick2_read_xy(x8, y8)) return 0;
