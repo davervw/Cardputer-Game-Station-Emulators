@@ -1,4 +1,4 @@
-# Cardputer Game Station
+# Cardputer Game Station w/ BLE controllers
 
 This version is a fork from [geo-tp/Cardputer-Game-Station-Emulators v1.2](https://github.com/geo-tp/Cardputer-Game-Station-Emulators) for the sole purpose of adding standard BLE gamepad support
 
