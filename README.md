@@ -4,6 +4,8 @@ This version is a fork from [geo-tp/Cardputer-Game-Station-Emulators v1.2](https
 
 ## !!! ADDED BLE SUPPORT !!!
 
+![xbox_ble.jpg](images/xbox_ble.jpg)
+
 Tested with the following controllers
 
 * Xbox One Controller (must be BLE, e.g. updated edition has share button)
