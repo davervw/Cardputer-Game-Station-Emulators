@@ -37,6 +37,7 @@ void a2600_input_update(Event& event)
         if (pad & share::PAD_UP)    up = true;
         if (pad & share::PAD_DOWN)  down = true;
         if (pad & share::PAD_A)     fire = true;
+        if (pad & share::PAD_B)     fire = true;
     }
 
     // ================== SCREEN MODE ==================
