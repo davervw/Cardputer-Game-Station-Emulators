@@ -23,9 +23,11 @@ Unfortunately only a subset of consoles, games are supported, included in this v
 * NES
 
 ### Kano Pixel Kit as a standard BLE gamepad
-Code additions from [davervw](https://github.com/davervw): Kano hardware supplies joystick and two buttons along with 16x8 NeoPixel display.  In addition to flashing this update to Game Station for Cardputer (StampS3), the ble_gamepad project must be separately flashed to the Kano Pixel Kit (ESP32-WROOM-32).
+Code additions from [davervw](https://github.com/davervw): Kano hardware supplies joystick and two buttons along with 16x8 NeoPixel display.  In addition to flashing this update to Game Station for Cardputer (StampS3), the [ble_gamepad](https://github.com/davervw/Cardputer-Game-Station-Emulators/tree/gamepad/ble_gamepad) project must be separately flashed to the Kano Pixel Kit (ESP32-WROOM-32).
 
 Flashing Blue means BLE is functioning.  Green means linked.  Amber not linked.
+
+Also see [gamepad_test](https://github.com/davervw/gamepad_test) for testing BLE controller pairing with ESP32.
 
 ![Kano Pixel Kit gamepad in action](images/KanoPixelKit_GamePad.jpg)
 
