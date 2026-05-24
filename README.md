@@ -1,20 +1,20 @@
 # Cardputer Game Station w/ BLE controllers
 
-This version is a fork from [geo-tp/Cardputer-Game-Station-Emulators v1.2](https://github.com/geo-tp/Cardputer-Game-Station-Emulators) for the sole purpose of adding standard BLE gamepad support
+This version is a fork from [geo-tp/Cardputer-Game-Station-Emulators v1.2](https://github.com/geo-tp/Cardputer-Game-Station-Emulators) for the sole purpose of adding standard BLE gamepad support.  I am not taking credit for any of the work done before me.
 
 ## !!! ADDED BLE SUPPORT !!!
 
-![xbox_ble.jpg](images/xbox_ble.jpg)
+![xbox one controller](images/xbox_ble.jpg)
 
 Tested with the following controllers
 
 * Xbox One Controller (must be BLE, e.g. updated edition has share button)
 * [M5MiniJoyC](https://github.com/davervw/m5_minijoystickc_gamepad) (attached to M5Stick, using my custom BLE firmware)
-* KanoPixelKit (using my custom BLE firmware, included, see below)
+* [ble_gamepad_KanoPixelKit](https://github.com/davervw/ble_gamepad_KanoPixelKit)
 
-Note: Classic Bluetooth controllers are not supported by ESP32-S3, so only BLE controllers are supported
+Note: Classic Bluetooth controllers are not supported by ESP32-S3, so only BLE controllers are supported. See [gamepad_test](https://github.com/davervw/gamepad_test) for testing BLE controller pairing with ESP32.
 
-Unfortunately only a subset of consoles, games are supported, included in this version.  See original (link above) for more consoles.
+Unfortunately only a subset of consoles and games are supported, included in this version, as due to resource constraints.  See original (link at top of file) for more consoles.
 
 * Atari 2600
 * Atari 7800
@@ -22,14 +22,10 @@ Unfortunately only a subset of consoles, games are supported, included in this v
 * Gameboy Color
 * NES
 
-### Kano Pixel Kit as a standard BLE gamepad
-Code additions from [davervw](https://github.com/davervw): Kano hardware supplies joystick and two buttons along with 16x8 NeoPixel display.  In addition to flashing this update to Game Station for Cardputer (StampS3), the [ble_gamepad](https://github.com/davervw/Cardputer-Game-Station-Emulators/tree/gamepad/ble_gamepad) project must be separately flashed to the Kano Pixel Kit (ESP32-WROOM-32).
+![ble_gamepad_KanoPixelKit](images/KanoPixelKit_GamePad.jpg)
 
-Flashing Blue means BLE is functioning.  Green means linked.  Amber not linked.
-
-Also see [gamepad_test](https://github.com/davervw/gamepad_test) for testing BLE controller pairing with ESP32.
-
-![Kano Pixel Kit gamepad in action](images/KanoPixelKit_GamePad.jpg)
+## Original README continues... 
+WARNING: (though lightly edited - removed consoles from table - still mentions non-supported consoles, emulators, etc.)
 
 ![NES emulator screen captures on the M5Stack Cardputer](images/nes_emulator_s.jpg)
 ![GBC emulator screen captures on the M5Stack Cardputer](images/gbc_emulator_s.jpg)
