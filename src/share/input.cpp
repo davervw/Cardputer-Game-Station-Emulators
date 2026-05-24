@@ -109,9 +109,9 @@ namespace share
             state |= PAD_A;
         if (buttons & 2)
             state |= PAD_B;
-        if (miscButtons & 2)
+        if (miscButtons & 2 || buttons & 0x40)
             state |= PAD_SELECT;
-        if (miscButtons & 4)
+        if (miscButtons & 4 || buttons & 0x80)
             state |= PAD_START;
         //Serial.printf("gamepadUpdate: %d %d %d: %d\n", dpad, buttons, miscButtons, state);
         gamepadState = state;
